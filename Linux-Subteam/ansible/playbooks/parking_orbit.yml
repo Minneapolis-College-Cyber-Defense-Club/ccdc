@@ -1,0 +1,85 @@
+---
+# this is the setup playbook that should only run on the Ansible coordinator
+# make sure to exclude this host from other kill chain playbooks as this playbook
+# has the same roles but tuned for the coordinator and its NetLab function
+- name: wake the crew
+  gather_facts: true
+  hosts: discovery
+  tasks:
+    - name: user_setup
+      ansible.builtin.include_role:
+        name: user_setup
+      vars:
+        orcman: "hal9000"
+        add_key: true
+
+    - name: user_setup
+      ansible.builtin.include_role:
+        name: user_setup
+      vars:
+        orcman: "root"
+        add_key: true
+
+    - name: do_sudo
+      ansible.builtin.include_role:
+        name: do_sudo 
+      vars:
+        orcman: "hal9000"
+
+    - name: user_setup
+      ansible.builtin.include_role:
+        name: user_setup
+      vars:
+        orcman: "dave2001"
+        add_key: true
+
+    - name: do_sudo
+      ansible.builtin.include_role:
+        name: do_sudo 
+      vars:
+        orcman: "dave2001"
+
+    - name: do_depot
+      ansible.builtin.include_role:
+        name: do_depot
+      vars:
+        make_depot: true
+
+    - name: shields up
+      ansible.builtin.include_role:
+        name: shields_up
+      vars:
+        battle_station: "{{ item }}"
+      loop:
+        - suss_users
+        - file_archive
+        - crons
+
+    - name: do_depot
+      ansible.builtin.include_role:
+        name: do_depot
+      vars:
+        do_chown: true
+        orcman: hal9000
+
+    - name: make_banner
+      ansible.builtin.include_role:
+        name: make_banner
+
+    - name: fix_sshd
+      ansible.builtin.include_role:
+        name: fix_sshd
+    
+    - name: do_firewall
+      ansible.builtin.include_role:
+        name: do_firewall
+      vars:
+        isufw: true
+      when: ansible_os_family == "Debian" 
+
+    - name: do_firewall
+      ansible.builtin.include_role:
+        name: do_firewall
+      vars:
+        isfirewalld: true
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int > 6

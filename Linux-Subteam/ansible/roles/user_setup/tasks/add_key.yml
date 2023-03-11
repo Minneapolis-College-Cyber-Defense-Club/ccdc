@@ -1,0 +1,7 @@
+---
+- name: add auto authkey "{{ orcman }}"
+  ansible.posix.authorized_key:
+    user: "{{ orcman }}"
+    state: present
+    key: "{{ lookup('file', '/depot/keys/hal9000.id_rsa.pub') }}"
+

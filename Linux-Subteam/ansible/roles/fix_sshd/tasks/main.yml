@@ -1,0 +1,31 @@
+---
+# inlcude the var file that has the desired sshd settings
+- include_vars: "../vars/sshd_vars.yml"
+
+# edit the /etc/ssh/sshd_config to desired state
+- name: configure sshd
+  ansible.builtin.import_tasks:
+    file: configure.yml
+
+# deny users unless they have a Match user stanza
+- name: add allowed
+  vars:
+    orcman: "{{ item }}"
+  ansible.builtin.include_tasks:
+    file: match_user.yml
+  loop:
+    - dave2001
+    - root
+
+# Ubuntu (14) doesn't call sshd, calls ssh...ancient OSes...
+- name: restart sshd
+  ansible.builtin.service:
+    name: sshd
+    state: restarted
+  when: ansible_distribution != "Ubuntu" and ansible_distribution_major_version | int < 16
+
+- name: restart sshd (Ubuntu less than 18 LTS)
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version | int < 16

@@ -1,0 +1,67 @@
+---
+# firewalld playbook for EL7+/systemd NetLab hosts
+- name: install firewalld for centos7 and fedora
+  ansible.builtin.package:
+    name: firewalld
+    state: present
+
+- name: ensure firewalld is started
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: change the default zone
+  ansible.builtin.command: /bin/firewall-cmd --set-default-zone=public 
+
+- name: remove dhcpv6-client
+  ansible.posix.firewalld: 
+    zone: public
+    service: dhcpv6-client
+    permanent: true
+    state: disabled
+
+- name: allow port 22 (ssh) 
+  ansible.posix.firewalld:
+    zone: public
+    service: ssh 
+    permanent: true
+    state: enabled
+
+# custom services
+- name: add web ports
+  ansible.posix.firewalld:
+    zone: public
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - http
+    - https
+  when: inc_web_ports is defined
+
+- name: add webmail ports by service
+  ansible.posix.firewalld:
+    zone: public
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - smtp
+    - pop3s
+    - imaps
+  when: inc_webmail_ports is defined
+
+- name: add webmail ports by number
+  ansible.posix.firewalld:
+    zone: public
+    port: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - 110/tcp
+    - 143/tcp
+  when: inc_webmail_ports is defined
+
+- name: restart firewalld
+  ansible.builtin.command: /bin/firewall-cmd --reload

@@ -1,0 +1,5 @@
+---
+- name: add key to the store
+  ansible.builtin.copy:
+    src: "/home/{{ orcman }}/.ssh/id_rsa.pub"
+    dest: /depot/keys/{{ orcman }}.id_rsa.pub

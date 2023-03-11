@@ -1,0 +1,63 @@
+---
+
+- name: additional hardening
+  gather_facts: true
+  hosts: all:!discovery
+  become: true
+  become_method: sudo
+  vars:
+    ansible_user: dave2001
+    ansible_become_user: root
+  vars_files:
+    - /depot/vault/sudo.yml
+  tasks:
+
+  - name: remove telnet and ftp
+    ansible.builtin.package:
+      name: 
+        - telnet
+        - ftp
+        - ftpd
+        - tftp
+      state: absent
+
+  - name: Network hardening adjustment in /etc/sysctl.conf (debian and ubuntu)
+    ansible.builtin.template:
+      src: ../files/ubuntu_sysctl.conf.j2
+      dest: /etc/sysctl.conf
+    when: ansible_distribution in ["Debian", "Ubuntu"]
+
+  - name: Network hardening adjustment in /etc/sysctl.conf (centOS and fedora)
+    ansible.builtin.template:
+      src: ../files/el_sysctl.conf.j2       
+      dest: /etc/sysctl.conf
+    when: ansible_distribution in ["CentOS", "Fedora"]
+
+  - name: reload sysctl
+    ansible.builtin.command: sysctl --system
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # - name: Configure rkhunter.conf
+#     ansible.builtin.template:
+#       src: rkhunter.conf.j2        # NEED TO UPLOAD EDITED CONFIG FILE - SET UP NOTIFICATIONS HERE
+#       dest: /etc/rkhunter.conf

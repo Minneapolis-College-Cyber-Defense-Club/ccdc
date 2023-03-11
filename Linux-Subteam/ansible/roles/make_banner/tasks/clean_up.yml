@@ -1,0 +1,10 @@
+---
+- name: banner - clean out old files
+  ansible.builtin.file:
+    path: "/etc/{{ item }}"
+    state: absent
+  loop:
+    - banner
+    - issue
+    - issue.net
+    - motd

@@ -1,0 +1,97 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+    
+
+  - name: install firewalld for centos7 and fedora
+    ansible.builtin.package:
+      name: firewalld
+      state: latest
+    when: ansible_distribution in ["CentOS", "Fedora"]    #add in specific version 
+  
+  - name: start firewalld
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+      enabled: yes
+    when: ansible_distribution in ["CentOS", "Fedora"]
+
+  - name: change the default zone
+    ansible.builtin.command: /bin/firewall-cmd --set-default-zone=public 
+    when: ansible_distribution in ["CentOS", "Fedora"]
+
+  - name: allow port 25 (smtp) for webmail service  
+    ansible.posix.firewalld:
+      port: '25' 
+      permanent: true
+      state: enabled
+    when: ansible_distribution == "Fedora"
+
+  - name: allow port 110 (pop3) for webmail service  
+    ansible.posix.firewalld:
+      port: '110' 
+      permanent: true
+      state: enabled
+    when: ansible_distribution == "Fedora"
+
+  - name: allow port 143 (imap) for webmail service  
+    ansible.posix.firewalld:
+      port: '143' 
+      permanent: true
+      state: enabled
+    when: ansible_distribution == "Fedora"
+
+  - name: allow port 22 (ssh) 
+    ansible.posix.firewalld:
+      port: '22/tcp' 
+      permanent: true
+      state: enabled
+    when: ansible_distribution in ["CentOS", "Fedora"]
+
+  # - name: allow port XXX (XXX) for ecomm service            # COMPLETE ME
+  #   ansible.posix.firewalld:
+  #     port: 'XXX' 
+  #     permanent: true
+  #     state: enabled
+  #   when: ansible_distribution == "CentOS" and ansible_distribution_version == "7"
+ 
+  # limit SSH to only competition subnet
+  # - name: Remove ssh momentarily
+  #   ansible.builtin.command: firewall-cmd --permanent --zone=public --remove-service=ssh
+  #   when: ansible_distribution in ["CentOS", "Fedora"]
+
+  # - name: Redirect port 22 ssh
+  #   ansible.posix.firewalld:
+  #     rich_rule: rule family=ipv4 source address=172.20.240.0/22 service name=ssh     # MAY NEED TO UPDATE
+  #     zone: public
+  #     permanent: true
+  #     immediate: true
+  #     state: enabled
+
+  - name: disable telnet 
+    ansible.posix.firewalld:
+      service: telnet
+      permanent: true
+      state: disabled
+    when: ansible_distribution in ["CentOS", "Fedora"]
+  
+  - name: disable ftp 
+    ansible.posix.firewalld:
+      service: ftp
+      permanent: true
+      state: disabled
+    when: ansible_distribution in ["CentOS", "Fedora"]
+
+  - name: save
+    ansible.builtin.command: /bin/firewall-cmd --runtime-to-permanent
+    when: ansible_distribution in ["CentOS", "Fedora"]
+
+  - name: reload
+    ansible.builtin.command: /bin/firewall-cmd --reload
+    when: ansible_distribution in ["CentOS", "Fedora"]
+
+
+
+  

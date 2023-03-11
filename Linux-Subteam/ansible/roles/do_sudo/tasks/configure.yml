@@ -1,0 +1,16 @@
+---
+# creates /etc/sudoers.d/<user> files and grants privileges
+# sudo should be limited
+- name: Configure "{{ orcman }}" sudoers
+  ansible.builtin.lineinfile:
+    path: "/etc/sudoers.d/{{ orcman }}"
+    create: true
+    owner: root
+    group: root
+    mode: '0440'
+    regex: "^(#)?{{item.key}}"
+    line: "{{item.key}} {{item.value}}"
+    state: present
+  loop:
+    - { key: "Defaults", value: " secure_path = /bin:/sbin:/usr/bin:/usr/sbin" }
+    - { key: "{{ orcman }}", value: " ALL=(ALL)  ALL" }

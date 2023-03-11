@@ -1,0 +1,45 @@
+---
+# Phase 1 kill chain, only for Debian8, because special old OS needs
+# difference in top level ansible variables that aren't used in the other NetLab
+# hosts
+- name: open the pod bay doors Hal
+  gather_facts: true
+  hosts: dnsntp
+  become: true
+  vars:
+    ansible_user: "{{ initial_user }}"
+    ansible_password: "{{ initial_password }}"
+    ansible_become_user: root
+    ansible_become_password: "{{ initial_password }}"
+    ansible_become_method: su
+  vars_files:
+    - "vars/first_pass.yml"
+  tasks:
+    - name: fix repos CentOS6 (if appropriate)
+      ansible.builtin.include_role:
+        name: fix_repos
+      when: ansible_os_family == "Debian"
+
+    - name: shields up
+      vars:
+        battle_station: "{{ item }}"
+      ansible.builtin.include_role:
+        name: shields_up
+      loop:
+        - file_archive
+        - crons
+        - dns
+        - hosts
+
+    - name: user_setup
+      vars:
+        orcman: dave2001
+        add_key: true
+      ansible.builtin.include_role:
+        name: user_setup
+
+    - name: do_sudo
+      vars:
+        orcman: dave2001
+      ansible.builtin.include_role:
+        name: do_sudo 

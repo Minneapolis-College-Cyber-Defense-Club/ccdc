@@ -1,0 +1,18 @@
+---
+# Suspicious cronjobs were found and assumed to allow backdoor
+# persistence for Red Team, while not ideal in Enterprise environment
+# in NetLab move all cronjobs to quarantine for review
+- name: make sure "{{ quarantine_path }}/crons" exists
+  ansible.builtin.file:
+    path: "{{ quarantine_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: remove any crons found
+  ansible.builtin.shell: |
+    for c in $(/bin/ls /var/spool/cron)
+    do
+        /bin/mv /var/spool/cron/${c}  {{ quarantine_path }}/crons/
+    done

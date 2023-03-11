@@ -1,0 +1,14 @@
+---
+- name: initialize/validate the depot
+  ansible.builtin.file:
+    path: "{{ depot_path }}/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+  loop:
+    - vault
+    - keys
+    - files
+    - quarantine
+

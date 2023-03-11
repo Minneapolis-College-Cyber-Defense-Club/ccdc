@@ -1,0 +1,24 @@
+---
+# there were some suspicous users found in /etc/passwd on Netlab hosts
+# this attempts to minimize them by locking down any uid 0 that is not root
+# assign nologin or false shells after locking
+# the user `sysadmin` is noted specifically and targets for locking separately
+- name: lock suspect users with uid under 1024
+  ansible.builtin.shell: |
+    for u in $(awk -F: '($3 < 1024) {print $1}' /etc/passwd)
+    do
+        case ${u} in
+          root) skip=y ;;
+          *) usermod -L ${u} ;;
+        esac
+        if [[ "${u}" != "root" && $(grep "^${u}" /etc/paswd | awk -F: '{print $3}') == "0" ]]; then
+          touch "{{ quarantine_path }}/non_uid0_user_${u}"
+        fi
+        case ${u} in
+          root | sync | shutdown | halt | sysadmin) skip=y ;;
+          syslog | landscape | messagebus) usermod -s /bin/false ${u} ;;
+          *) usermod -s /usr/sbin/nologin ${u} ;;
+        esac
+    done
+  args: 
+    executable: /bin/bash

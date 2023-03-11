@@ -1,0 +1,5 @@
+safe_dns_server: 1.1.1.1
+depot_path: /depot
+quarantine_path: /depot/quarantine
+ansible_ssh_key_checking: false
+subnet_range: "192.168.140.0/22"

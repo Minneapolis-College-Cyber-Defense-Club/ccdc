@@ -1,0 +1,38 @@
+---
+# tasks file for ssh_setup
+- name: fix "{{ sshd_path }}" permissions
+  ansible.builtin.file:
+    path: "{{ sshd_path }}"
+    owner: root
+    group: root
+    mode: '0600'
+# values are kept in a separate var file and explicitly 
+# called for setting
+- name: Configure sshd
+  lineinfile:
+    path: "{{ sshd_path }}"
+    backup: true
+    regex: "^(#)?{{item.key}}"
+    line: "{{item.key}} {{item.value}}"
+    state: present
+  loop:
+    - { key: "PermitRootLogin", value: "{{ ssh_opt_PermitRootLogin }}" }
+    - { key: "PermitEmptyPasswords", value: "{{ ssh_opt_PermitEmptyPasswords }}" }
+    - { key: "KerberosAuthentication", value: "{{ ssh_opt_KerberosAuthentication }}" }
+    - { key: "GSSAPIAuthentication", value: "{{ ssh_opt_GSSAPIAuthentication }}" }
+    - { key: "X11Forwarding", value: "{{ ssh_opt_X11Forwarding }}" }
+    - { key: "MaxAuthTries", value: "{{ ssh_opt_MaxAuthTries }}" }
+    - { key: "LoginGraceTime", value: "{{ ssh_opt_LoginGraceTime }}" }
+    - { key: "PermitUserEnvironment", value: "{{ ssh_opt_PermitUserEnvironment }}" }
+    - { key: "AllowAgentForwarding", value: "{{ ssh_opt_AllowAgentForwarding }}" }
+    - { key: "AllowTcpForwarding", value: "{{ ssh_opt_AllowTcpForwarding }}" }
+    - { key: "PermitTunnel", value: "{{ ssh_opt_PermitTunnel }}" }
+    - { key: "MaxSessions", value: "{{ ssh_opt_MaxSessions }}" }
+    - { key: "Compression", value: "{{ ssh_opt_Compression }}" }
+    - { key: "TCPKeepAlive", value: "{{ ssh_opt_TCPKeepAlive }}" }
+    - { key: "UseDNS", value: "{{ ssh_opt_UseDNS }}" }
+    - { key: "LogLevel", value: "{{ ssh_opt_LogLevel }}" }
+    - { key: "ClientAliveCountMax", value: "{{ ssh_opt_ClientAliveCountMax }}" }
+    - { key: "Banner", value: "{{ ssh_opt_Banner }}" }
+    - { key: "DenyUsers", value: "{{ ssh_opt_DenyUsers }}" }
+    - { key: "UsePAM", value: "{{ ssh_opt_UsePAM }}"}

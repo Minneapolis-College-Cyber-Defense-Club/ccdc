@@ -1,0 +1,4 @@
+---
+- name: adjust authorized_keys
+  ansible.builtin.import_tasks:
+    file: user_key.yml

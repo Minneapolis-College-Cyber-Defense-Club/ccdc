@@ -1,0 +1,15 @@
+---
+- name: setup firewalld
+  ansible.builtin.import_tasks:
+    file: firewalld.yml
+  when: isfirewalld is defined
+
+- name: setup ufw
+  ansible.builtin.import_tasks:
+    file: ufw.yml
+  when: isufw is defined
+
+- name: setup iptables
+  ansible.builtin.import_tasks:
+    file: iptables.yml
+  when: isiptables is defined

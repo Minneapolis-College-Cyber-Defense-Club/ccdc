@@ -1,0 +1,32 @@
+---
+# tasks file for quarantine
+#        - hosts
+#        - dns
+#        - suss_users
+#        - file_archive
+#        - crons
+
+- name: check for suspect users and lock
+  ansible.builtin.import_tasks:
+    file: suss_users.yml
+  when: battle_station == "suss_users"
+
+- name: quarantine interesting files
+  ansible.builtin.import_tasks:
+    file: file_archive.yml
+  when: battle_station == "file_archive"
+
+- name: check for, quarantine and remove suspect crons
+  ansible.builtin.import_tasks:
+    file: crons.yml
+  when: battle_station == "crons"
+
+- name: fix /etc/resolv.conf
+  ansible.builtin.import_tasks:
+    file: dns.yml
+  when: battle_station == "dns"
+
+- name: fix /etc/hosts
+  ansible.builtin.import_tasks:
+    file: hosts.yml
+  when: battle_station == "hosts"

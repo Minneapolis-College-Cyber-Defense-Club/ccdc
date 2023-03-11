@@ -1,0 +1,85 @@
+---
+# Phase 2 of the kill chain, should be run after open_the_podbay_doors...
+# again exclude (-l '!<host>') the coordinator from this run
+- name: docking the pod
+  gather_facts: true
+  hosts: all:!discovery
+  become: true
+  become_method: sudo
+  vars:
+    ansible_user: dave2001
+    ansible_become_user: root
+  vars_files:
+    - /depot/vault/sudo.yml
+  tasks:
+    - name: user_setup
+      vars:
+        orcman: root
+      ansible.builtin.include_role:
+        name: user_setup
+
+     # before building the depot check ownership
+    - name: validating depot existence
+      ansible.builtin.stat:
+        path: "{{ depot_path }}"
+      register: depot_exists
+
+    - name: do_depot
+      vars:
+        make_depot: true
+        orcman: dave2001
+        do_chown: true
+      ansible.builtin.include_role:
+        name: do_depot
+      when: depot_exists.stat.isdir is undefined
+
+    - name: make_banner
+      ansible.builtin.include_role:
+        name: make_banner
+
+    - name: fix_sshd
+      ansible.builtin.include_role:
+        name: fix_sshd
+
+    - name: do_firewall
+      ansible.builtin.include_role:
+        name: do_firewall
+      vars:
+        isufw: true
+      when: ansible_os_family == "Debian"
+
+    - name: do_firewall
+      ansible.builtin.include_role:
+        name: do_firewall
+      vars:
+        isfirewalld: true
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int > 6
+
+    - name: do_firewall
+      ansible.builtin.include_role:
+        name: do_firewall
+      vars:
+        isiptables: true
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+
+    - name: shields up
+      vars:
+        battle_station: suss_users
+      ansible.builtin.include_role:
+        name: shields_up
+
+    - name: do_sudo
+      vars:
+        orcman: dave2001
+        sudo_pass2: true
+      ansible.builtin.include_role:
+        name: do_sudo 
+
+    - name: clean up non-standard admin account (if present)
+      ansible.builtin.user:
+        name: sysadmin
+        password_lock: true
+        shell: /usr/sbin/nologin
+      when: non_root_admin is defined
+
+

@@ -1,0 +1,12 @@
+---
+- name: useradd "{{ orcman }}"
+  ansible.builtin.user:
+    name: "{{ orcman }}"
+    uid: "{{ orcman_id }}"
+    shell: /bin/bash
+    create_home: true
+    generate_ssh_key: yes
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+    password: "{{ h_password }}"
+    state: present

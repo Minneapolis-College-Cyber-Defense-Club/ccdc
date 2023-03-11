@@ -1,0 +1,15 @@
+---
+# NetLab hosts have "poisoned" DNS servers defined in some cases
+# these servers block access to sites such as Windows update, centos.org, etc.
+# This comments out existing settings for review and puts in a "safe" DNS site
+- name: adjust existing /etc/resolv.conf
+  ansible.builtin.replace:
+    path: /etc/resolv.conf
+    backup: true
+    regexp: '^((?!#).+)$'  # match only if not commented out
+    replace: '# \1'
+- name: add "{{ safe_dns_server }}"
+  ansible.builtin.lineinfile:
+    path: /etc/resolv.conf
+    line: "nameserver {{ safe_dns_server }}"
+    state: present

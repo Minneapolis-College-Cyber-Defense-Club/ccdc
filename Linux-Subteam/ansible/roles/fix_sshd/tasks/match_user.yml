@@ -1,0 +1,33 @@
+---
+# adds Match user stanzas to /etc/ssh/sshd_config
+- name: add match user "{{ orcman }}"
+  ansible.builtin.blockinfile:
+    path: "{{ sshd_path }}"
+    backup: true
+    state: present
+    marker: "# {mark} match user {{ orcman }}"
+    block: |
+      Match User "{{ orcman }}"
+        PubkeyAuthentication yes
+        PasswordAuthentication yes
+  when: orcman != "root"
+
+# modern convention is `prohibit-password`
+# but older version of OpenSSH encountered in NetLab
+# don't support this and for now `without-password`
+# is backward compatible
+- name: add context for root
+  ansible.builtin.blockinfile:
+    path: "{{ sshd_path }}"
+    backup: true
+    state: present
+    marker: "# {mark} match user {{ orcman }}"
+    block: |
+      Match User "{{ orcman }}"
+        PubkeyAuthentication yes
+        PasswordAuthentication no
+        PermitRootLogin without-password
+  when: orcman == "root"
+
+
+    

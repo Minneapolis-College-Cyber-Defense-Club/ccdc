@@ -1,0 +1,42 @@
+discovery   ansible_host=127.0.0.1
+; discovery2  ansible_host=128.0.0.1
+ecomm       ansible_host=192.168.142.6
+email       ansible_host=192.168.142.5
+splunker    ansible_host=192.168.142.7
+www         ansible_host=192.168.142.12
+dnsntp      ansible_host=192.168.142.23
+; pwww        ansible_host=
+; pdnsntp      ansible_host=
+; pemr         ansible_host=
+; pseconion   ansible_host=
+
+[mothership]
+discovery
+; discovery2
+[ecommerce]
+ecomm
+[webmail]
+email
+[splunk]
+splunker
+[web]
+www
+; pwww
+[bindntp]
+dnsntp
+; pdnsntp
+
+
+[EL7Fedora]
+ecomm
+email
+[EL6]
+splunker
+[Ubuntu]
+www
+; pwww
+; pemr
+; pseconion
+[Debian]
+dnsntp
+; pdnsntp

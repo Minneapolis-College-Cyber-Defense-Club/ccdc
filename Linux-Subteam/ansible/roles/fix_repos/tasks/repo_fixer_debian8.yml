@@ -1,0 +1,50 @@
+---
+# old Debian archives are in much the same situation as CentOS6
+# a bit of hackery is needed to get them working and old versions
+# no longer have valid security repos due to key expirations
+- name: disable existing repo by commenting out lines
+  ansible.builtin.replace:
+    path: "{{ repo_path }}"
+    backup: true
+    regexp: '^((?!#).+)$'  # match only if not commented out
+    replace: '# \1'
+
+- name:  debian8 fixed repos
+  ansible.builtin.blockinfile:
+    path: "{{ repo_path }}"
+    backup: true
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    marker: "# {mark} fixed repository debian8"
+    block: |
+      deb http://deb.debian.org/debian/ {{ ansible_distribution_release }} main
+      #deb http://security.debian.org/ {{ ansible_distribution_release }}/updates main
+
+- name:  debian8 fixed security certificates
+  ansible.builtin.lineinfile:
+    path: "/etc/apt/apt.conf"
+    create: true
+    owner: root
+    group: root
+    mode: '0440'
+    line: "Acquire::Check-Valid-Until false;"
+    state: present
+
+- name: debian8 fix ancient mirror issues
+  ansible.builtin.lineinfile:
+    path: "/etc/apt/apt.conf.d/99ccdc"
+    create: true
+    owner: root
+    group: root
+    mode: '0444'
+    line: APT::Get::AllowUnauthenticated "true";
+    state: present
+
+- name: debian8 apt update
+  ansible.builtin.shell: |
+    /usr/bin/apt-get clean
+    /usr/bin/apt-get update
+

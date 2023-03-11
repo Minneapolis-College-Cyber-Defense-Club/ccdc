@@ -1,0 +1,21 @@
+---
+- include_vars: "/depot/vault/{{ orcman }}.yml"
+
+- name: groupadd
+  ansible.builtin.import_tasks:
+    file: groupadd.yml
+  when: orcman != "root"
+
+- name: useradd
+  ansible.builtin.import_tasks:
+    file: useradd.yml
+
+- name: add authorized key
+  ansible.builtin.import_tasks:
+    file: store_key.yml
+  when: orcman == "hal9000"
+
+- name: add authorized key
+  ansible.builtin.import_tasks:
+    file: add_key.yml
+  when: add_key is defined

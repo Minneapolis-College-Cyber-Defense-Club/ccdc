@@ -1,0 +1,52 @@
+---
+# playbook for UFW based firewalls
+- name: install ufw for ubuntu and debian
+  ansible.builtin.package:
+    name: ufw
+    state: present
+
+- name: allow ssh
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: UFW - Enable and deny by default
+  community.general.ufw:
+    state: enabled
+    default: deny
+
+- name: allow all access to port 53 (dns)
+  community.general.ufw:
+    rule: allow
+    port: '53'
+  when: inc_dns_ports is defined
+
+- name: allow all access to port 127 (ntp)
+  community.general.ufw:
+    rule: allow
+    port: '123'
+  when: inc_ntp_ports is defined
+
+- name: allow all access to port 80 (http) and 443 (https)
+  community.general.ufw:
+    rule: allow
+    port: '{{ item }}'
+  when: inc_web_ports is defined
+  with_items:
+    - 80
+    - 443
+
+# - name: Deny all access to common insecure ports
+#   community.general.ufw:
+#     rule: deny
+#     port: "{{ item }}"
+#   with_items:
+#     - 20
+#     - 21
+#     - 23
+#     - 25
+
+- name: UFW - reload
+  community.general.ufw:
+    state: reloaded
+

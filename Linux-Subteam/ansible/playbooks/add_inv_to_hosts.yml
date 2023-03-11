@@ -1,0 +1,14 @@
+---
+- name: update /etc/hosts with inventory IPs
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Add IP address of all hosts to /etc/hosts
+      lineinfile:
+        dest: /etc/hosts
+        regexp: '.*{{ item }}$'
+        line: "{{ hostvars[item].ansible_host }}\t{{ item }} "
+        state: present
+      when: hostvars[item].ansible_host is defined
+      with_items: "{{ groups.all }}"

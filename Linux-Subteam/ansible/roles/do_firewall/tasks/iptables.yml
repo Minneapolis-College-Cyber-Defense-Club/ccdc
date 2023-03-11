@@ -1,0 +1,88 @@
+---
+# IPtables playbook for hosts that can't use firewalld or ufw for some reason
+# IPtables basic chain
+- name: change default chain policy (used to clean rules)
+  ansible.builtin.iptables:
+    chain: INPUT
+    policy: ACCEPT
+
+- name: clean rules on all chains of filter table
+  ansible.builtin.iptables:
+    table: filter
+    flush: yes
+
+- name: delete all user-defined chains on filter table
+  shell: iptables -t filter -X
+
+- name: Allow to loopback interface
+  ansible.builtin.iptables:
+    in_interface: lo
+    chain: INPUT
+    jump: ACCEPT
+    comment: loopback
+
+- name: Allow established and related state
+  ansible.builtin.iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+
+# required for ansible coordination
+- name: Allow ssh connection
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: '22'
+    jump: ACCEPT
+    comment: ssh
+
+# Netlab scored service
+- name: Allow splunk connection
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: '8000'
+    jump: ACCEPT
+    comment: splunk
+  when: inc_splunk_ports is defined
+
+# Netlab scored service, put here as backup if ufw can't be
+# made working on Debian 8 due to ancient repo issues
+- name: Allow bind and ntp connection
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: "{{ item }}"
+    jump: ACCEPT
+    comment: bind and ntp
+  when: inc_dns_ports is defined and inc_ntp_ports is defined
+  with_items: [ '53', '123' ]
+
+# commented out but kept for reference
+# - name: disallow specific ports
+#   ansible.builtin.iptables:
+#     chain: INPUT
+#     protocol: tcp
+#     source_port: "{{ item }}"
+#     jump: DROP
+#     comment: ftp
+#   with_items: [ '20', '21', '23' ]
+
+# default policy
+- name: set default chain policy
+  ansible.builtin.iptables:
+    chain: INPUT
+    policy: DROP
+
+# ------- nat rules -------
+- name: clean rules on all chains of nat table
+  ansible.builtin.iptables:
+    table: nat
+    flush: yes
+
+- name: delete all user-defined chains on nat table
+  shell: iptables -t nat -X
+
+# save the tables to disk (assumes non-systemd)
+- name: save iptables config to disk
+  shell: service iptables save

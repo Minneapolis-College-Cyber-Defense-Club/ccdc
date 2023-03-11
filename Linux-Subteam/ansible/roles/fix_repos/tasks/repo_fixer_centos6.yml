@@ -1,0 +1,67 @@
+---
+# CentOS6 as 2022 vaults are inaccessible to most version of CentOS6
+# due to the centos.org site only providing TLS 1.2+ support and
+# older versions of CentOS6 openssl do not support 1.2, so the
+# site becomes inaccessible. CERN maintains old vaults as a courtesy
+# to users who need the old versions
+- name: disable existing repo by commenting out lines
+  ansible.builtin.replace:
+    path: "{{ repo_path }}"
+    backup: true
+    regexp: '^((?!#).+)$'  # match only if not commented out
+    replace: '# \1'
+
+- name: centos6 fixed repos
+  ansible.builtin.blockinfile:
+    path: "{{ repo_path }}"
+    backup: true
+    create: true
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    marker: "# {mark} fixed repository {{ ansible_distribution_version }}"
+    block: |
+      [base]
+      name=CentOS-{{ ansible_distribution_version }} - Base
+      baseurl=https://linuxsoft.cern.ch/centos-vault/{{ ansible_distribution_version }}/os/x86_64/
+      gpgcheck=0
+      gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+      enabled=1
+      metadata_expire=never
+
+      #released updates
+      [updates]
+      name=CentOS-{{ ansible_distribution_version }} - Updates
+      baseurl=https://linuxsoft.cern.ch/centos-vault/{{ ansible_distribution_version }}/updates/x86_64/
+      gpgcheck=0
+      gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+      enabled=1
+      metadata_expire=never
+
+      # additional packages that may be useful
+      [extras]
+      name=CentOS-{{ ansible_distribution_version }} - Extras
+      baseurl=https://linuxsoft.cern.ch/centos-vault/{{ ansible_distribution_version }}/extras/x86_64/
+      gpgcheck=0
+      gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+      enabled=1
+      metadata_expire=never
+
+      # additional packages that extend functionality of existing packages
+      [centosplus]
+      name=CentOS-{{ ansible_distribution_version }} - CentOSPlus
+      baseurl=https://linuxsoft.cern.ch/centos-vault/{{ ansible_distribution_version }}/centosplus/x86_64/
+      gpgcheck=0
+      gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+      enabled=0
+      metadata_expire=never
+
+      #contrib - packages by Centos Users
+      [contrib]
+      name=CentOS-{{ ansible_distribution_version }} - Contrib
+      baseurl=https://linuxsoft.cern.ch/centos-vault/{{ ansible_distribution_version }}/contrib/x86_64/
+      gpgcheck=0
+      gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+      enabled=0
+      metadata_expire=never

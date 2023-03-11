@@ -1,0 +1,71 @@
+---
+# Phase 1 pass on systems for kill chain hardening
+- name: open the pod bay doors Hal
+  gather_facts: true
+  hosts: all:!discovery:!dnsntp
+  become: true
+  vars:
+    ansible_user: "{{ initial_user }}"
+    ansible_password: "{{ initial_password }}"
+    ansible_become_user: root
+    ansible_become_password: "{{ initial_password }}"
+  tasks:
+    # CentOS6 vault is no longer accessible due to TLS1.2 enforcement
+    # and openssl versions not supporting it in various
+    # version of CentOS6, this leverages CERN's archive 
+    # which still works
+    - name: fix repos CentOS6 (if appropriate)
+      ansible.builtin.include_role:
+        name: fix_repos
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version|int == 6
+
+    # this causes delay in PAM auth processing and isn't used
+    # so should be removed
+    - name: remove fprintd if exists, hangs sudo on fedora
+      ansible.builtin.package:
+        name: fprintd
+        state: absent
+      when: ansible_distribution == "Fedora"
+
+    # this attempts to clean up some of the persistence and odd things
+    # noted on the NetLab systems and copy some files for reference
+    # purposes into a quarantine location
+    - name: shields up
+      vars:
+        battle_station: "{{ item }}"
+      ansible.builtin.include_role:
+        name: shields_up
+      loop:
+        - file_archive
+        - crons
+        - dns
+        - hosts
+
+    # chicken and egg scenario, if by default SELinux is enabled
+    # on a CentOS6 host, libselinux-python is required for checksum validation
+    # within ansible, however ansible is being used to fix the repos
+    # so check `sestatus` on the host if problems occur on CentOS6
+    # note: setting SELinux 'permissive' still causes issues, unless this 
+    # package is installed, only a full `disable` will eliminate the need for this
+    # # CentOS6 requires a package to work properly
+    # - name: install libselinux-python
+    #   vars:
+    #     ansible_user: "{{ initial_user }}"
+    #   ansible.builtin.package:
+    #     name: libselinux-python
+    #     state: present
+    #   when: iscentos6 is defined
+
+    # my god...its full of stars...
+    - name: user_setup
+      vars:
+        orcman: dave2001
+        add_key: true
+      ansible.builtin.include_role:
+        name: user_setup
+
+    - name: do_sudo
+      vars:
+        orcman: dave2001
+      ansible.builtin.include_role:
+        name: do_sudo 

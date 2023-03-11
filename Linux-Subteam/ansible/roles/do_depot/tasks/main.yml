@@ -1,0 +1,12 @@
+---
+# making the local depot which is used for things like
+# file quarantine
+- name: make_depot
+  ansible.builtin.import_tasks:
+    file: make_depot.yml
+  when: make_depot is defined
+
+- name: do_chown
+  ansible.builtin.import_tasks:
+    file: do_chown.yml
+  when: do_chown is defined

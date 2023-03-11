@@ -1,0 +1,10 @@
+---
+- include_vars: "/depot/vault/{{ orcman }}.yml"
+- name: adjust /etc/sudoers file
+  ansible.builtin.import_tasks:
+    file: adjust.yml
+  when: sudo_pass2 is defined
+
+- name: configure sudoers
+  ansible.builtin.import_tasks:
+    file: configure.yml

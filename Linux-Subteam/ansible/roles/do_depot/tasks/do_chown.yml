@@ -1,0 +1,10 @@
+---
+- name: change permissions on depot struct
+  ansible.builtin.file:
+    path: /depot
+    state: directory
+    recurse: yes
+    owner: "{{ orcman }}"
+    group: "{{ orcman }}"
+    mode: "0700"
+

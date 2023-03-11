@@ -1,0 +1,3 @@
+initial_user: root
+initial_password: changeme
+# isiptables: true

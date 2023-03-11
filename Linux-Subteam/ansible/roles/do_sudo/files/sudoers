@@ -1,0 +1,13 @@
+## generated sudoers
+Defaults !visiblepw
+Defaults always_set_home
+Defaults match_group_by_gid
+Defaults env_reset
+Defaults env_keep = "COLORS DISPLAY HOSTNAME HISTSIZE MAIL PS1 PS2 LANG LS_COLORS"
+Defaults env_keep += "MAIL QTDIR USERNAME LC_ADDRESS LC_CTYPE LC_COLLATE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES"
+Defaults env_keep += "LC_NAME LC_MONETARY LC_NUMERIC LC_PAPER LC_TELEPHONE LC_TIME LC_ALL LANGUAGE LINGUAS"
+Defaults env_keep += "_XKB_CHARSET XAUTHORITY"
+Defaults secure_path = /sbin:/bin:/usr/sbin:/usr/bin
+
+# need to include this
+#includedir /etc/sudoers.d

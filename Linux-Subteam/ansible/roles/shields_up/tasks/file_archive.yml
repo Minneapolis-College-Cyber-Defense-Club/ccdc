@@ -1,0 +1,7 @@
+---
+- name: grab a copy of certain files
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - "/bin/cp -p /root/.bash_history {{ quarantine_path }}/root.bash_history"
+    - " last > {{ quarantine_path }}/last.out"
+    - "cp /etc/*.orig {{ quarantine_path }}/"
